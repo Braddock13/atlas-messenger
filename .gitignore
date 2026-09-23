@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+.output/
+.vinxi/
+.nitro/
+.vercel/
+.tanstack/
+
+# Environment & secrets — never commit
+.env
+.env.*
+!.env.example
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+*.pem
+credentials*.json
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Tests / local
+coverage/
+screenshots/
+playwright-report/
+test-results/
+
+# Editor
+.idea/
+.vscode/
+*.swp
+
+# Workspace internals (not the product)
+.grok/**
+!.grok/app-env.json
+artifacts/
+AGENTS.md
+AGENTS.project.md
+.project_id
+.node_modules.lock
+
