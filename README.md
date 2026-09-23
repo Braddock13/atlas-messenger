@@ -89,18 +89,18 @@ Si vous branchez Firebase plus tard :
 
 ### GitHub
 
-Dépôt : [github.com/Braddock13/atlas-messenger](https://github.com/Braddock13/atlas-messenger)
+Dépôt public : [github.com/Braddock13/atlas-messenger](https://github.com/Braddock13/atlas-messenger)
+
+### Netlify (en ligne)
+
+Production : [https://atlas-messenger.netlify.app](https://atlas-messenger.netlify.app)  
+Tableau de bord : [app.netlify.com/projects/atlas-messenger](https://app.netlify.com/projects/atlas-messenger)
+
+Le build cible Nitro `netlify` lorsque `NETLIFY=true`. Ajouter `DATABASE_URL` (Neon) dans les variables du site pour persister les comptes et messages en production. Sans elle, la base embarquée ne survit pas aux invocations serverless.
 
 ### Vercel
 
-Le build (`vite build` + migrations) cible déjà Vercel (`nitro` preset). Après connexion du dépôt :
-
-1. Framework : Vite / TanStack Start
-2. Build : `npm run build`
-3. Ajouter `DATABASE_URL` (Neon), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `VITE_AUTH_ENABLED=true`
-4. Chaque push sur `main` déclenche un déploiement
-
-Sans `DATABASE_URL`, le build réussit (PGLite de secours) mais les données ne persistent pas en serverless — Neon est obligatoire en production.
+Le projet `atlas-messenger` existe sur le compte Vercel. Pour brancher le dépôt GitHub : Vercel → Add New → Import `Braddock13/atlas-messenger`, framework Vite, Node 22, variables `DATABASE_URL`, `BETTER_AUTH_SECRET`, `VITE_AUTH_ENABLED=true`. Le preset Nitro `vercel` est utilisé hors Netlify.
 
 ## Structure
 
