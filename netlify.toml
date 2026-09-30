@@ -1,11 +1,10 @@
 [build]
-  command = "NETLIFY=true npm run build"
+  command = "npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "22"
   VITE_AUTH_ENABLED = "true"
-  NETLIFY = "true"
 
 [functions]
   node_bundler = "esbuild"
