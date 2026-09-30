@@ -1,10 +1,11 @@
 [build]
-  command = "npm run build"
+  command = "node scripts/with-app-env.mjs vite build"
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "22"
+  NODE_VERSION = "22.12.0"
   VITE_AUTH_ENABLED = "true"
+  NPM_CONFIG_ENGINE_STRICT = "false"
 
 [functions]
   node_bundler = "esbuild"
