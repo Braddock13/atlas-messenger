@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
+import { useState, type ReactNode } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { GROK_PROVIDERS, authEnabled, signIn } from "@/lib/auth/client";
 import { AtlasMark } from "./mark";
-import type { ReactNode } from "react";
 
 export function AuthScreen({
   title,
@@ -31,6 +34,52 @@ export function AuthScreen({
   );
 }
 
+export function SocialAuth({
+  callbackURL = "/app",
+  errorCallbackURL = "/login",
+}: {
+  callbackURL?: string;
+  errorCallbackURL?: string;
+}) {
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  if (!authEnabled) return null;
+
+  return (
+    <div className="mt-6 space-y-2">
+      <p className="text-center text-xs tracking-[0.18em] text-muted-foreground uppercase">
+        ou
+      </p>
+      {GROK_PROVIDERS.map((provider) => (
+        <Button
+          key={provider.providerId}
+          type="button"
+          variant="outline"
+          className="w-full"
+          disabled={pendingId !== null}
+          onClick={() => {
+            void (async () => {
+              setPendingId(provider.providerId);
+              try {
+                await signIn(provider.providerId, {
+                  callbackURL,
+                  errorCallbackURL,
+                });
+              } catch (err) {
+                toast.error(authErrorMessage(err));
+                setPendingId(null);
+              }
+            })();
+          }}
+        >
+          {pendingId === provider.providerId
+            ? "Ouverture…"
+            : `Continuer avec ${provider.label}`}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
 export function authErrorMessage(error: unknown): string {
   const raw =
     error && typeof error === "object" && "message" in error
@@ -43,7 +92,7 @@ export function authErrorMessage(error: unknown): string {
   if (lower.includes("already") || lower.includes("exists")) {
     return "Un compte existe déjà avec cet e-mail.";
   }
-  if (lower.includes("password") && lower.includes("weak")) {
+  if (lower.includes("password") && (lower.includes("weak") || lower.includes("too short") || lower.includes("at least"))) {
     return "Mot de passe trop faible. 8 caractères minimum.";
   }
   if (lower.includes("invalid origin")) {
@@ -51,6 +100,15 @@ export function authErrorMessage(error: unknown): string {
   }
   if (lower.includes("unauthorized")) {
     return "Session expirée. Reconnectez-vous.";
+  }
+  if (lower.includes("pop-up") || lower.includes("popup")) {
+    return "Autorisez les pop-ups pour continuer avec Google ou X.";
+  }
+  if (lower.includes("cancelled") || lower.includes("canceled")) {
+    return "Connexion annulée.";
+  }
+  if (lower.includes("failed to fetch") || lower.includes("network")) {
+    return "Connexion impossible pour le moment. Réessayez.";
   }
   return raw || "Une erreur est survenue.";
 }

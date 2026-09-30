@@ -3,12 +3,27 @@ import { pendingMigrations } from "../../scripts/migration-plan.mjs";
 /** Which database backend is active. */
 export type DbSource = "neon" | "pglite";
 
-// An empty/whitespace DATABASE_URL (an easy misconfig in deploy UIs) must mean
-// "unset" — otherwise production would silently run on the PGLite fallback.
-const rawDatabaseUrl =
-  typeof process !== "undefined" ? process.env.DATABASE_URL : undefined;
-const databaseUrl =
-  rawDatabaseUrl && rawDatabaseUrl.trim() ? rawDatabaseUrl : undefined;
+/**
+ * Netlify Database injects `NETLIFY_DATABASE_URL` rather than `DATABASE_URL`.
+ * Copy it over at module load so Better Auth (`server.ts` imports this file
+ * first) and `getSql()` share the same Postgres. Empty/whitespace still means
+ * "unset" so production never silently falls through to a throwaway PGLite.
+ */
+function adoptDeployedDatabaseUrl(): string | undefined {
+  if (typeof process === "undefined") return undefined;
+  const existing = process.env.DATABASE_URL?.trim();
+  if (existing) return existing;
+  const fromNetlify =
+    process.env.NETLIFY_DATABASE_URL?.trim() ||
+    process.env.NETLIFY_DATABASE_URL_UNPOOLED?.trim();
+  if (fromNetlify) {
+    process.env.DATABASE_URL = fromNetlify;
+    return fromNetlify;
+  }
+  return undefined;
+}
+
+const databaseUrl = adoptDeployedDatabaseUrl();
 
 /**
  * Active backend: real **Neon** when `DATABASE_URL` is set (deployed / configured

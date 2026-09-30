@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AuthScreen, authErrorMessage } from "@/components/atlas/auth-screen";
+import { AuthScreen, SocialAuth, authErrorMessage } from "@/components/atlas/auth-screen";
 import { RedirectIfAuthed } from "@/components/atlas/guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
+import { emailAuthFetchOptions, finishEmailAuth } from "@/lib/atlas/session";
+import { authClient } from "@/lib/auth/client";
 
 export const Route = createFileRoute("/register")({ component: RegisterPage });
 
@@ -33,12 +34,13 @@ function RegisterForm() {
     }
     setPending(true);
     try {
-      const { error } = await authClient.signUp.email({
+      const result = await authClient.signUp.email({
         email,
         password,
         name: name.trim() || email.split("@")[0] || "Membre ATLAS",
+        fetchOptions: emailAuthFetchOptions,
       });
-      if (error) throw error;
+      await finishEmailAuth(result);
       toast.success("Compte créé");
       await navigate({ to: "/app" });
     } catch (err) {
@@ -93,24 +95,7 @@ function RegisterForm() {
         </Button>
       </form>
 
-      {authEnabled ? (
-        <div className="mt-6 space-y-2">
-          <p className="text-center text-xs tracking-[0.18em] text-muted-foreground uppercase">
-            ou
-          </p>
-          {GROK_PROVIDERS.map((p) => (
-            <Button
-              key={p.providerId}
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => void signIn(p.providerId, { callbackURL: "/app" })}
-            >
-              Continuer avec {p.label}
-            </Button>
-          ))}
-        </div>
-      ) : null}
+      <SocialAuth callbackURL="/app" errorCallbackURL="/register" />
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Déjà inscrit ?{" "}
